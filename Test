@@ -1,0 +1,49 @@
+local Players = game:GetService("Players")
+
+local function attachPartToHead(character)
+	-- Wait for the player's head to load
+	local head = character:WaitForChild("Head", 5)
+	if not head then return end
+
+	-- Check if a floating part already exists to prevent duplicates
+	if character:FindFirstChild("FloatingPart") then
+		character.FloatingPart:Destroy()
+	end
+
+	-- Create the part
+	local part = Instance.new("Part")
+	part.Name = "FloatingPart"
+	part.Size = Vector3.new(1.2, 1.2, 1.2)
+	part.Shape = Enum.PartType.Ball
+	part.Material = Enum.Material.Neon
+	part.BrickColor = BrickColor.new("Bright yellow")
+	part.CanCollide = false
+	part.Anchored = false
+
+	-- Position 2.5 studs directly above the head
+	part.CFrame = head.CFrame * CFrame.new(0, 2.5, 0)
+	part.Parent = character
+
+	-- Weld it to the head so it moves with the player
+	local weld = Instance.new("WeldConstraint")
+	weld.Part0 = head
+	weld.Part1 = part
+	weld.Parent = part
+end
+
+local function onPlayerAdded(player)
+	-- Listen for when the player spawns or respawns
+	player.CharacterAdded:Connect(attachPartToHead)
+	
+	-- Handle character if already spawned
+	if player.Character then
+		attachPartToHead(player.Character)
+	end
+end
+
+-- Connect existing players and new joining players
+Players.PlayerAdded:Connect(onPlayerAdded)
+
+for _, player in Players:GetPlayers() do
+	onPlayerAdded(player)
+end
